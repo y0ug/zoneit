@@ -1,7 +1,7 @@
-from dhcp_zone.zone_utils import ZoneFile, SOA, RecordType, RTypeEnum
+from .zone_utils import ZoneFile, SOA, RecordType, RTypeEnum
 from dotenv import load_dotenv
-from dhcp_zone.mk_lease import mktxp_dhcp_lease
-from dhcp_zone.zt_lease import zt_dhcp_lease
+from .mk_lease import mktxp_dhcp_lease
+from .zt_lease import zt_dhcp_lease
 import logging
 import asyncio
 import os
