@@ -33,7 +33,7 @@ app = FastAPI(lifespan=lifespan)
 
 def gen_zone(domain_name, clients):
     soa = SOA(mname="ns.mazenet.org", rname="admin.mazenet.org", refresh=300)
-    zone = ZoneFile(domain_name, soa=soa)
+    zone = ZoneFile(domain_name, soa=soa, ttl=300)
     for record in clients:
         if not record.get("hostname", None):
             continue
@@ -46,6 +46,25 @@ def gen_zone(domain_name, clients):
         zone.add_record(r)
     return zone.generate()
 
+def gen_zone_reverse(domain_name, clients):
+    soa = SOA(mname="ns.mazenet.org", rname="admin.mazenet.org", refresh=300)
+    zone = ZoneFile(domain_name, soa=soa, ttl=300)
+    for k,v in clients.items():
+        for record in v:
+            if not record.get("hostname", None):
+                continue
+
+            value = f'{record["hostname"]}.{k}.mazenet.org'
+            reverse_name = f'{'.'.join(record["ip_address"].split('.')[::-1])}.in-addr.arpa'
+
+            r = RecordType(
+                rtype=RTypeEnum.PTR,
+                name=reverse_name,
+                value=value,
+                ttl=300,
+            )
+            zone.add_record(r)
+    return zone.generate()
 
 async def zone_update():
     global clients
@@ -76,6 +95,9 @@ async def zone_update():
             name = f"{k}.mazenet.org"
             clients[name] = v
             zones[name] = gen_zone(name, v)
+
+        name = "83.10.in-addr.arpa"
+        zones[name] = gen_zone_reverse(name, c)
 
         await asyncio.sleep(300)
 

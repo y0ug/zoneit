@@ -16,6 +16,7 @@ class SOA(BaseModel):
 
 class RTypeEnum(str, Enum):
     A = "A"
+    PTR = "PTR"
 
 
 class RecordType(BaseModel):
@@ -52,11 +53,10 @@ $ORIGIN {self.name}.
 """
         # NS  {self.soa[0]}
 
-        # Write A records
         for record in self.records:
-            if record.rtype == RTypeEnum.A:
-                if last_ttl != record.ttl:
-                    zone_str += f"$TTL {record.ttl}\n"
-                    last_ttl = record.ttl
-                zone_str += f"{record.name} A {record.value}\n"
+            # if record.rtype == RTypeEnum.A:
+            if last_ttl != record.ttl:
+                zone_str += f"$TTL {record.ttl}\n"
+                last_ttl = record.ttl
+            zone_str += f"{record.name} {record.rtype.value} {record.value}\n"
         return zone_str
