@@ -54,8 +54,8 @@ def gen_zone_reverse(domain_name, clients):
             if not record.get("hostname", None):
                 continue
 
-            value = f'{record["hostname"]}.{k}.mazenet.org'
-            reverse_name = f'{'.'.join(record["ip_address"].split('.')[::-1][:2])}'
+            value = f'{record["hostname"]}.{k}.mazenet.org.'
+            reverse_name = f'{'.'.join(record["ip_address"].split('.')[::-1][:3])}'
 
             r = RecordType(
                 rtype=RTypeEnum.PTR,
@@ -96,7 +96,7 @@ async def zone_update():
             clients[name] = v
             zones[name] = gen_zone(name, v)
 
-        name = "83.10.in-addr.arpa"
+        name = "10.in-addr.arpa"
         zones[name] = gen_zone_reverse(name, c)
 
         await asyncio.sleep(300)
