@@ -21,10 +21,7 @@ zones = {}
 
 
 def gen_zone(domain_name, clients):
-    soa = SOA(
-        mname="ns.mazenet.org",
-        rname="admin.mazenet.org",
-    )
+    soa = SOA(mname="ns.mazenet.org", rname="admin.mazenet.org", refresh=300)
     zone = ZoneFile(domain_name, soa=soa)
     for record in clients:
         if not record.get("hostname", None):
