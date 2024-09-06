@@ -55,7 +55,7 @@ def gen_zone_reverse(domain_name, clients):
                 continue
 
             value = f'{record["hostname"]}.{k}.mazenet.org'
-            reverse_name = f'{'.'.join(record["ip_address"].split('.')[::-1])}.in-addr.arpa'
+            reverse_name = f'{'.'.join(record["ip_address"].split('.')[::-1][:2])}'
 
             r = RecordType(
                 rtype=RTypeEnum.PTR,
