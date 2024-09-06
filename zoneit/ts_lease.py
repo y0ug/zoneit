@@ -4,7 +4,7 @@ import httpx
 
 # def get_zerotier_clients(api_token: str, network_id: str):
 #     if not api_token or not network_id:
-#         print("Error: Missing required environment variables ZT_TOKEN and ZT_NETWORK")
+#         print("Error: Missing requiredtskey-api-k3YqzuRVtB21CNTRL-viRBUaPF2UQ416of1qaaYQm1ArHQ71iH environment variables ZT_TOKEN and ZT_NETWORK")
 #         return None
 #
 #     headers = {"Authorization": f"Bearer {api_token}"}
@@ -14,9 +14,9 @@ import httpx
 #
 #     data = response.json()
 #
-async def get_zerotier_clients(api_token: str, network_id: str):
+async def get_tailscale_clients(api_token: str, network_id: str):
     headers = {"Authorization": f"Bearer {api_token}"}
-    url = f"https://api.zerotier.com/api/v1/network/{network_id}/member"
+    url = f"https://api.tailscale.com/api/v2/tailnet/{network_id}/devices"
 
     async with httpx.AsyncClient() as client:
         response = await client.get(url, headers=headers)
@@ -26,17 +26,17 @@ async def get_zerotier_clients(api_token: str, network_id: str):
     return data
 
 
-async def zt_dhcp_lease(zt_token, zt_network):
-    # Format the output as per your requirements
-    data = await get_zerotier_clients(zt_token, zt_network)
+async def ts_dhcp_lease(ts_token, ts_network):
+    data = await get_tailscale_clients(ts_token, ts_network)
     clients = []
-    for device in data:
-        ips = device["config"]["ipAssignments"]
+    for device in data["devices"]:
+        ips = device["addresses"]
         ip = ips[0] if len(ips) else None
+        # print(device)
         client = {
-            "hostname": device.get("name", None),
+            "hostname": device.get("name", None).split(".")[0],
             "ip_address": ip,
-            "id": device["config"]["address"],
+            "id": device["nodeId"],
         }
         if client["hostname"]:
             clients.append(client)

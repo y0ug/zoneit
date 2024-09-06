@@ -1,23 +1,25 @@
-from .zone_utils import ZoneFile, SOA, RecordType, RTypeEnum
-from dotenv import load_dotenv
-from .mk_lease import mktxp_dhcp_lease
-from .zt_lease import zt_dhcp_lease
 import logging
 import asyncio
 import os
+
+from fastapi import BackgroundTasks, FastAPI, HTTPException
 from fastapi.responses import PlainTextResponse
 
+from dotenv import load_dotenv
+
+from .mk_lease import mktxp_dhcp_lease
+from .zt_lease import zt_dhcp_lease
+from .ts_lease import ts_dhcp_lease
+from .zone_utils import ZoneFile, SOA, RecordType, RTypeEnum
+
+# logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 load_dotenv()
 
-
-from fastapi import BackgroundTasks, FastAPI, HTTPException
-
-logging.basicConfig(level=logging.INFO)
+zones = {}
+clients = {}
 
 app = FastAPI()
-
-zones = {}
 
 
 def gen_zone(domain_name, clients):
@@ -37,18 +39,31 @@ def gen_zone(domain_name, clients):
 
 
 async def zone_update():
+    global clients
     prom_url = os.getenv("PROM_URL")
     mkt_node = os.getenv("MKT_NODE")
 
     zt_token = os.getenv("ZT_TOKEN")
     zt_network = os.getenv("ZT_NETWORK")
 
+    ts_token = os.getenv("TS_TOKEN")
+    ts_network = os.getenv("TS_NETWORK")
+
     while True:
+        clients = {}
+        ts_clients = await ts_dhcp_lease(ts_token, ts_network)
+        name = "ts.mazenet.org"
+        clients[name] = ts_clients
+        zones[name] = gen_zone(name, ts_clients)
+
         zt_clients = await zt_dhcp_lease(zt_token, zt_network)
-        zones["zt.mazenet.org"] = gen_zone("zt.mazenet.org", zt_clients)
+        name = "zt.mazenet.org"
+        clients[name] = zt_clients
+        zones[name] = gen_zone(name, zt_clients)
         mkt_clients = await mktxp_dhcp_lease(prom_url, mkt_node)
         for k, v in mkt_clients.items():
             name = f"{k}.mazenet.org"
+            clients[name] = v
             zones[name] = gen_zone(name, v)
         await asyncio.sleep(300)
 
@@ -56,6 +71,11 @@ async def zone_update():
 @app.on_event("startup")
 async def startup_event():
     asyncio.create_task(zone_update())
+
+
+@app.get("/zone/dump")
+async def zone_dump():
+    return clients
 
 
 @app.get(
