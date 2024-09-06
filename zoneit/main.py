@@ -51,20 +51,23 @@ async def zone_update():
 
     while True:
         clients = {}
-        ts_clients = await ts_dhcp_lease(ts_token, ts_network)
-        name = "ts.mazenet.org"
-        clients[name] = ts_clients
-        zones[name] = gen_zone(name, ts_clients)
 
-        zt_clients = await zt_dhcp_lease(zt_token, zt_network)
+        c = await ts_dhcp_lease(ts_token, ts_network)
+        name = "ts.mazenet.org"
+        clients[name] = c
+        zones[name] = gen_zone(name, c)
+
+        c = await zt_dhcp_lease(zt_token, zt_network)
         name = "zt.mazenet.org"
-        clients[name] = zt_clients
-        zones[name] = gen_zone(name, zt_clients)
-        mkt_clients = await mktxp_dhcp_lease(prom_url, mkt_node)
-        for k, v in mkt_clients.items():
+        clients[name] = c
+        zones[name] = gen_zone(name, c)
+
+        c = await mktxp_dhcp_lease(prom_url, mkt_node)
+        for k, v in c.items():
             name = f"{k}.mazenet.org"
             clients[name] = v
             zones[name] = gen_zone(name, v)
+
         await asyncio.sleep(300)
 
 
