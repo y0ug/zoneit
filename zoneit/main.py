@@ -1,17 +1,16 @@
-import logging
 import asyncio
+import logging
 import os
-
-from fastapi import BackgroundTasks, FastAPI, HTTPException
-from fastapi.responses import PlainTextResponse
 from contextlib import asynccontextmanager
 
 from dotenv import load_dotenv
+from fastapi import BackgroundTasks, FastAPI, HTTPException
+from fastapi.responses import PlainTextResponse
 
 from .mk_lease import mktxp_dhcp_lease
-from .zt_lease import zt_dhcp_lease
 from .ts_lease import ts_dhcp_lease
-from .zone_utils import ZoneFile, SOA, RecordType, RTypeEnum
+from .zone_utils import SOA, RecordType, RTypeEnum, ZoneFile
+from .zt_lease import zt_dhcp_lease
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)

@@ -1,5 +1,5 @@
-import requests
 import httpx
+import requests
 
 
 # def get_zerotier_clients(api_token: str, network_id: str):
@@ -34,7 +34,8 @@ async def ts_dhcp_lease(ts_token, ts_network):
         ip = ips[0] if len(ips) else None
         # print(device)
         client = {
-            "hostname": device.get("name", None).split(".")[0],
+            "hostname": device["name"].split(".")[0],
+            "tshostname": device["name"],
             "ip_address": ip,
             "id": device["nodeId"],
         }

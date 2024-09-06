@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "zoneit"
-version = "0.1.5"
+version = "0.1.6"
 description = ""
 authors = ["Hugo Caron <hca443@gmail.com>"]
 readme = "README.md"
@@ -24,3 +24,6 @@ requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry.scripts]
+
+[tool.ruff]
+lint.extend-select = ["I"]
