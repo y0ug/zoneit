@@ -4,6 +4,7 @@ import os
 
 from fastapi import BackgroundTasks, FastAPI, HTTPException
 from fastapi.responses import PlainTextResponse
+from contextlib import asynccontextmanager
 
 from dotenv import load_dotenv
 
@@ -12,14 +13,23 @@ from .zt_lease import zt_dhcp_lease
 from .ts_lease import ts_dhcp_lease
 from .zone_utils import ZoneFile, SOA, RecordType, RTypeEnum
 
-# logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 load_dotenv()
 
 zones = {}
 clients = {}
 
-app = FastAPI()
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    asyncio.create_task(zone_update())
+    yield
+    zones.clear()
+    clients.clear()
+
+
+app = FastAPI(lifespan=lifespan)
 
 
 def gen_zone(domain_name, clients):
@@ -69,11 +79,6 @@ async def zone_update():
             zones[name] = gen_zone(name, v)
 
         await asyncio.sleep(300)
-
-
-@app.on_event("startup")
-async def startup_event():
-    asyncio.create_task(zone_update())
 
 
 @app.get("/zone/dump")
