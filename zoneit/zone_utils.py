@@ -40,7 +40,7 @@ class ZoneFile:
 
     def generate(self):
         last_ttl = self.ttl
-        zone_str = f"""$ORIGIN {self.name}.
+        zone_str = f"""$ORIGIN .
 $TTL {self.ttl}
 {self.name}. IN SOA  {self.soa.mname}. {self.soa.rname}. (
     {self.soa.serial} ; serial
