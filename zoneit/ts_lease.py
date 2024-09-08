@@ -1,4 +1,7 @@
+from typing import List
 import httpx
+
+from zoneit.models import ClientInfoTs
 
 
 # def get_zerotier_clients(api_token: str, network_id: str):
@@ -25,20 +28,22 @@ async def get_tailscale_clients(api_token: str, network_id: str):
     return data
 
 
-async def ts_dhcp_lease(ts_token, ts_network):
+async def ts_dhcp_lease(ts_token, ts_network, domain) -> List[ClientInfoTs]:
     data = await get_tailscale_clients(ts_token, ts_network)
     clients = []
     for device in data["devices"]:
         ips = device["addresses"]
         ip = ips[0] if len(ips) else None
-        # print(device)
-        client = {
-            "hostname": device["name"].split(".")[0],
-            "tshostname": device["name"],
-            "ip_address": ip,
-            "id": device["nodeId"],
-        }
-        if client["hostname"]:
-            clients.append(client)
+        clients.append(
+            ClientInfoTs.model_validate(
+                {
+                    "hostname": device["name"].split(".")[0],
+                    "ip_address": ip,
+                    "id": device["nodeId"],
+                    "domain": domain,
+                    "tshostname": device["name"],
+                }
+            )
+        )
 
     return clients
