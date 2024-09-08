@@ -1,23 +1,12 @@
-import os  # noqa: I001
 import asyncio
 from ipaddress import ip_network
 from typing import List
-
-from pydantic import (
-    BaseModel,
-    ValidationInfo,
-    field_validator,
-    model_validator,
-    validator,
-)
+from zoneit.clientinfo_provider import MktClientInfo, TsClientInfo, ZtClientInfo
 
 from zoneit.models import ClientInfo
 
-from .config import settings_dependency
-from .mk_lease import mktxp_dhcp_lease
-from .ts_lease import ts_dhcp_lease
+from .config import Settingsv2, settings_dependency
 from .zone_utils import SOA, RecordType, RTypeEnum, ZoneFile
-from .zt_lease import zt_dhcp_lease
 
 
 async def reverse_ptr_update(c):
@@ -69,29 +58,21 @@ async def process_leases(name, c):
 async def zone_update():
     conf = await settings_dependency()
 
-    prom_url = os.getenv("PROM_URL")
-    mkt_node = os.getenv("MKT_NODE")
+    settings = Settingsv2()
 
-    zt_token = os.getenv("ZT_TOKEN")
-    zt_network = os.getenv("ZT_NETWORK")
-
-    ts_token = os.getenv("TS_TOKEN")
-    ts_network = os.getenv("TS_NETWORK")
+    providers = [
+        ZtClientInfo(settings.zt),
+        TsClientInfo(settings.ts),
+        MktClientInfo(settings.mkt),
+    ]
 
     while True:
-        name = "ts.mazenet.org"
-        c = await ts_dhcp_lease(ts_token, ts_network, name)
-        await process_leases(name, c)
+        data = {}
+        for p in providers:
+            data = {**data, **await p.get()}
 
-        name = "zt.mazenet.org"
-        c = await zt_dhcp_lease(zt_token, zt_network, name)
-        await process_leases(name, c)
-
-        name = "mazenet.org"
-        c = await mktxp_dhcp_lease(prom_url, mkt_node, name)
-        for k, v in c.items():
-            name = f"{k}.mazenet.org"
-            await process_leases(name, v)
+        for zone, clients in data.items():
+            await process_leases(zone, clients)
 
         for k, v in conf.reverse_ptr.items():
             conf.zones[k] = gen_zone_reverse(k, v)

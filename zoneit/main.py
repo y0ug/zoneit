@@ -2,7 +2,7 @@ import asyncio
 import logging
 from contextlib import asynccontextmanager
 
-from dotenv import load_dotenv
+# from dotenv import load_dotenv
 from fastapi import Depends, FastAPI, HTTPException
 from fastapi.responses import PlainTextResponse
 from redis.asyncio import Redis
@@ -13,7 +13,7 @@ from .memdb import redis_dependency
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
-load_dotenv()
+# load_dotenv()
 
 
 @asynccontextmanager

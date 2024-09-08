@@ -2,6 +2,51 @@ import os
 from typing import List, Set, Any, Optional
 from ipaddress import ip_network
 
+from pydantic import (
+    AnyHttpUrl,
+    Field,
+    RedisDsn,
+    BaseModel,
+)
+from pydantic_settings import BaseSettings, SettingsConfigDict
+
+
+class SettingsZt(BaseModel):
+    token: str  # = Field(validation_alias="zt_token")
+    network: str  # = Field(validation_alias="zt_network")
+    api_url: AnyHttpUrl = Field(default="https://ztnet.mazenet.org")
+    domain: str
+
+
+class SettingsTs(BaseModel):
+    token: str  # = Field(validation_alias="ts_token")
+    network: str  # = Field(validation_alias="ts_network")
+    api_url: AnyHttpUrl = Field(default="https://api.tailscale.com")
+    domain: str
+
+
+class SettingsMkt(BaseModel):
+    prom_url: str  # AnyHttpUrl
+    prom_token: Optional[str]
+    node: str  # = Field(validation_alias="mkt_node")
+    domain: str
+
+
+class Settingsv2(BaseSettings):
+    model_config = SettingsConfigDict(
+        extra="ignore", env_file=".env", env_nested_delimiter="__"
+    )
+
+    ts: SettingsTs
+    zt: SettingsZt
+    mkt: SettingsMkt
+
+    redis_url: RedisDsn = Field(
+        "redis://localhost:6379/1",
+    )
+    redis_prefix: str = Field(default="zoneit")
+    # model_config = SettingsConfigDict(env_prefix="my_prefix_")
+
 
 class Settings:
     ranges = {
