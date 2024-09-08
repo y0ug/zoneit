@@ -1,11 +1,13 @@
 import time
-from typing import Dict, Any, Optional, Set, Union, List
 from abc import ABC, abstractmethod
+from typing import Any, Dict, List, Optional, Set, Union
 
 
 class InMemoryBackend(ABC):
     @abstractmethod
-    async def set(self, key: str, value, expire: int = 0, pexpire: int = 0, exists=None):
+    async def set(
+        self, key: str, value, expire: int = 0, pexpire: int = 0, exists=None
+    ):
         """Set Key to Value"""
 
     @abstractmethod
@@ -85,7 +87,9 @@ class RAMBackend(InMemoryBackend):
             return False
         return True
 
-    async def set(self, key: str, value: Any, expire: int = 0, pexpire: int = 0, exists=None):
+    async def set(
+        self, key: str, value: Any, expire: int = 0, pexpire: int = 0, exists=None
+    ):
         """Set Key to Value"""
         if not isinstance(value, bytes) and not isinstance(value, List):
             value = bytes(str(value), "utf-8")

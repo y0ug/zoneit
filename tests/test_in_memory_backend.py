@@ -1,7 +1,7 @@
 import asyncio
 from typing import Set
 from unittest import IsolatedAsyncioTestCase
-from unittest.mock import patch, AsyncMock
+from unittest.mock import AsyncMock, patch
 
 from fastapi_framework.in_memory_backend import RAMBackend
 
@@ -25,7 +25,9 @@ class TestInMemoryBackend(IsolatedAsyncioTestCase):
 
     async def test_set_value_wrong_params(self):
         with self.assertRaises(Exception):
-            await ram_backend.set("test_set_value_wrong_params", "test_value", exists="WRONG")
+            await ram_backend.set(
+                "test_set_value_wrong_params", "test_value", exists="WRONG"
+            )
 
     async def test_set_value_with_pttl(self):
         await ram_backend.set("test_set_value_with_pttl", "test_value", pexpire=2000)
@@ -165,20 +167,28 @@ class TestInMemoryBackend(IsolatedAsyncioTestCase):
         await ram_backend.delete("test_delete_dont_exists")
 
     async def test_set_if_not_exists_and_set_if_exists(self):
-        await ram_backend.set("test_set_if_not_exists", "1", exists=ram_backend.SET_IF_NOT_EXIST)
+        await ram_backend.set(
+            "test_set_if_not_exists", "1", exists=ram_backend.SET_IF_NOT_EXIST
+        )
 
         self.assertEqual(await ram_backend.get("test_set_if_not_exists"), b"1")
 
-        await ram_backend.set("test_set_if_not_exists", "2", exists=ram_backend.SET_IF_NOT_EXIST)
+        await ram_backend.set(
+            "test_set_if_not_exists", "2", exists=ram_backend.SET_IF_NOT_EXIST
+        )
 
         self.assertEqual(await ram_backend.get("test_set_if_not_exists"), b"1")
 
-        await ram_backend.set("test_set_if_not_exists", "3", exists=ram_backend.SET_IF_EXIST)
+        await ram_backend.set(
+            "test_set_if_not_exists", "3", exists=ram_backend.SET_IF_EXIST
+        )
 
         self.assertEqual(await ram_backend.get("test_set_if_not_exists"), b"3")
 
         del ram_backend.data["test_set_if_not_exists"]
-        await ram_backend.set("test_set_if_not_exists", "4", exists=ram_backend.SET_IF_EXIST)
+        await ram_backend.set(
+            "test_set_if_not_exists", "4", exists=ram_backend.SET_IF_EXIST
+        )
 
         self.assertEqual(await ram_backend.get("test_set_if_not_exists"), None)
 
@@ -190,21 +200,26 @@ class TestInMemoryBackend(IsolatedAsyncioTestCase):
     async def test_sadd_item_to_set(self):
         await ram_backend.sadd("test_sadd_item_to_set", "test_value_1")
 
-        self.assertEqual(await ram_backend.smembers("test_sadd_item_to_set"), {"test_value_1"})
+        self.assertEqual(
+            await ram_backend.smembers("test_sadd_item_to_set"), {"test_value_1"}
+        )
 
     async def test_sadd_multiple_values(self):
         for i in range(5):
             await ram_backend.sadd("test_sadd_multiple_values", f"test_value_{i}")
 
         self.assertEqual(
-            await ram_backend.smembers("test_sadd_multiple_values"), set(map(lambda x: f"test_value_{x}", range(5)))
+            await ram_backend.smembers("test_sadd_multiple_values"),
+            set(map(lambda x: f"test_value_{x}", range(5))),
         )
 
     async def test_srem(self):
         await ram_backend.sadd("test_srem", "test_srem_1")
         await ram_backend.sadd("test_srem", "test_srem_2")
 
-        self.assertEqual(await ram_backend.smembers("test_srem"), {"test_srem_1", "test_srem_2"})
+        self.assertEqual(
+            await ram_backend.smembers("test_srem"), {"test_srem_1", "test_srem_2"}
+        )
 
         await ram_backend.srem("test_srem", "test_srem_2")
 
@@ -213,10 +228,14 @@ class TestInMemoryBackend(IsolatedAsyncioTestCase):
     async def test_srem_member_dont_exists(self):
         await ram_backend.sadd("test_srem_member_dont_exists", "test_srem_1")
 
-        self.assertEqual(await ram_backend.srem("test_srem_member_dont_exists", "test"), False)
+        self.assertEqual(
+            await ram_backend.srem("test_srem_member_dont_exists", "test"), False
+        )
 
     async def test_srem_key_dont_exists(self):
-        self.assertEqual(await ram_backend.srem("test_srem_key_dont_exists", "test"), False)
+        self.assertEqual(
+            await ram_backend.srem("test_srem_key_dont_exists", "test"), False
+        )
 
     async def test_exists(self):
         self.assertEqual(await ram_backend.exists("test_exists"), False)
@@ -228,7 +247,9 @@ class TestInMemoryBackend(IsolatedAsyncioTestCase):
     async def test_smembers_with_string(self):
         await ram_backend.set("test_smembers_with_string", "test_value")
 
-        self.assertEqual(await ram_backend.smembers("test_smembers_with_string"), {b"test_value"})
+        self.assertEqual(
+            await ram_backend.smembers("test_smembers_with_string"), {b"test_value"}
+        )
 
     async def test_increase_with_list(self):
         await ram_backend.set("test_increase_with_list", ["test"])

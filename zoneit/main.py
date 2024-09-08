@@ -7,9 +7,9 @@ from fastapi import Depends, FastAPI, HTTPException
 from fastapi.responses import PlainTextResponse
 from redis.asyncio import Redis
 
-from .tasks import zone_update
 from .config import Settings, settings_dependency
 from .memdb import redis_dependency
+from .tasks import zone_update
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)

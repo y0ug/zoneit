@@ -1,5 +1,6 @@
-from pydantic import BaseModel, computed_field, field_validator, ValidationInfo
 from typing import Optional
+
+from pydantic import BaseModel, ValidationInfo, computed_field, field_validator
 
 
 class ClientInfo(BaseModel):

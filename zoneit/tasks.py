@@ -1,8 +1,8 @@
 import asyncio
 from ipaddress import ip_network
 from typing import List
-from zoneit.clientinfo_provider import MktClientInfo, TsClientInfo, ZtClientInfo
 
+from zoneit.clientinfo_provider import MktClientInfo, TsClientInfo, ZtClientInfo
 from zoneit.models import ClientInfo
 
 from .config import Settingsv2, settings_dependency
