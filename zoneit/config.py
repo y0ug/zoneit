@@ -1,5 +1,5 @@
 from ipaddress import ip_network
-from typing import Optional
+from typing import Optional, Type, Tuple
 
 from pydantic import (
     AnyHttpUrl,
@@ -7,7 +7,11 @@ from pydantic import (
     Field,
     RedisDsn,
 )
-from pydantic_settings import BaseSettings, SettingsConfigDict
+from pydantic_settings import (
+    BaseSettings,
+    PydanticBaseSettingsSource,
+    SettingsConfigDict,
+)
 
 
 class SettingsZt(BaseModel):
@@ -44,7 +48,17 @@ class Settings(BaseSettings):
         "redis://localhost:6379/1",
     )
     redis_prefix: str = Field(default="zoneit")
-    # model_config = SettingsConfigDict(env_prefix="my_prefix_")
+
+    @classmethod
+    def settings_customise_sources(
+        cls,
+        settings_cls: Type[BaseSettings],
+        init_settings: PydanticBaseSettingsSource,
+        env_settings: PydanticBaseSettingsSource,
+        dotenv_settings: PydanticBaseSettingsSource,
+        file_secret_settings: PydanticBaseSettingsSource,
+    ) -> Tuple[PydanticBaseSettingsSource, ...]:
+        return env_settings, dotenv_settings, init_settings, file_secret_settings
 
 
 class Ctx:
