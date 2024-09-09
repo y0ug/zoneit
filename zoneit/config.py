@@ -31,7 +31,7 @@ class SettingsMkt(BaseModel):
     domain: str
 
 
-class Settingsv2(BaseSettings):
+class Settings(BaseSettings):
     model_config = SettingsConfigDict(
         extra="ignore", env_file=".env", env_nested_delimiter="__"
     )
@@ -47,7 +47,7 @@ class Settingsv2(BaseSettings):
     # model_config = SettingsConfigDict(env_prefix="my_prefix_")
 
 
-class Settings:
+class Ctx:
     ranges = {
         "10.in-addr.arpa": ip_network("10.0.0.0/8"),
         "168.192.in-addr.arpa": ip_network("192.168.0.0/16"),
@@ -62,19 +62,19 @@ class Settings:
         self.clients = {}
 
 
-class SettingsDependency:
-    ctx: Optional[Settings] = None
+class CtxDependency:
+    ctx: Optional[Ctx] = None
 
-    async def __call__(self) -> Settings:
+    async def __call__(self) -> Ctx:
         if self.ctx is None:
             await self.init()
         if self.ctx:
             return self.ctx
         else:
-            raise Exception("failed to init settings")
+            raise Exception("failed to init ctx")
 
     async def init(self):
-        self.ctx = Settings()
+        self.ctx = Ctx()
 
 
-settings_dependency: SettingsDependency = SettingsDependency()
+ctx_dependency: CtxDependency = CtxDependency()

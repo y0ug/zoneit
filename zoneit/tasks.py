@@ -6,7 +6,7 @@ from typing import List
 from zoneit.clientinfo_provider import MktClientInfo, TsClientInfo, ZtClientInfo
 from zoneit.models import ClientInfo
 
-from .config import Settingsv2, settings_dependency
+from .config import Settings, ctx_dependency
 from .zone_utils import SOA, RecordType, RTypeEnum, ZoneFile
 
 logger = logging.getLogger(__name__)
@@ -14,12 +14,12 @@ logging.getLogger("httpx").setLevel(logging.WARNING)
 
 
 async def reverse_ptr_update(c):
-    conf = await settings_dependency()
+    ctx = await ctx_dependency()
 
-    for k, v in conf.ranges.items():
+    for k, v in ctx.ranges.items():
         for x in c:
             if v.overlaps(ip_network(f"{x.ip_address}/24", strict=False)):
-                conf.reverse_ptr[k].append(x)
+                ctx.reverse_ptr[k].append(x)
                 return
 
 
@@ -52,17 +52,17 @@ def gen_zone_reverse(domain_name, clients):
 
 
 async def process_leases(name, c):
-    conf = await settings_dependency()
-    conf.clients[name] = c
-    conf.zones[name] = gen_zone(name, c)
+    ctx = await ctx_dependency()
+    ctx.clients[name] = c
+    ctx.zones[name] = gen_zone(name, c)
     await reverse_ptr_update(c)
     return c
 
 
 async def zone_update():
-    conf = await settings_dependency()
+    ctx = await ctx_dependency()
 
-    settings = Settingsv2()  # pyright: ignore
+    settings = Settings()  # pyright: ignore
 
     providers = [
         ZtClientInfo(settings.zt),
@@ -88,7 +88,7 @@ async def zone_update():
         for zone, clients in data.items():
             await process_leases(zone, clients)
 
-        for k, v in conf.reverse_ptr.items():
-            conf.zones[k] = gen_zone_reverse(k, v)
+        for k, v in ctx.reverse_ptr.items():
+            ctx.zones[k] = gen_zone_reverse(k, v)
 
         await asyncio.sleep(300)
