@@ -4,10 +4,8 @@ from contextlib import asynccontextmanager
 
 from fastapi import Depends, FastAPI, HTTPException
 from fastapi.responses import PlainTextResponse
-from redis.asyncio import Redis
 
 from .config import Ctx, ctx_dependency
-from .memdb import redis_dependency
 from .tasks import zone_update
 
 logging.basicConfig(level=logging.INFO)
@@ -16,7 +14,6 @@ logger = logging.getLogger(__name__)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    await redis_dependency.init()
     await ctx_dependency.init()
     asyncio.create_task(zone_update())
     yield
@@ -28,7 +25,6 @@ app = FastAPI(lifespan=lifespan)
 
 @app.get("/zone/dump")
 async def get_zone_dump(
-    redis: Redis = Depends(redis_dependency),
     ctx: Ctx = Depends(ctx_dependency),
 ):
     return ctx.clients
@@ -36,7 +32,6 @@ async def get_zone_dump(
 
 @app.get("/zones")
 async def get_zones(
-    redis: Redis = Depends(redis_dependency),
     ctx: Ctx = Depends(ctx_dependency),
 ):
     return [k for k in ctx.zones.keys()]
@@ -48,7 +43,6 @@ async def get_zones(
 )
 async def get_zone(
     name: str,
-    redis: Redis = Depends(redis_dependency),
     ctx: Ctx = Depends(ctx_dependency),
 ):
     if name not in ctx.zones:
