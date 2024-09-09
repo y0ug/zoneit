@@ -1,5 +1,5 @@
 from ipaddress import ip_network
-from typing import Optional, Type, Tuple
+from typing import Optional, Tuple, Type
 
 from pydantic import (
     AnyHttpUrl,

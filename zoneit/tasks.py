@@ -63,7 +63,6 @@ async def zone_update():
     ctx = await ctx_dependency()
 
     settings = Settings()  # pyright: ignore
-    logger.info(settings)
 
     providers = [
         ZtClientInfo(settings.zt),
