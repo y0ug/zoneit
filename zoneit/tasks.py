@@ -1,4 +1,5 @@
 import asyncio
+import logging
 from ipaddress import ip_network
 from typing import List
 
@@ -7,6 +8,9 @@ from zoneit.models import ClientInfo
 
 from .config import Settingsv2, settings_dependency
 from .zone_utils import SOA, RecordType, RTypeEnum, ZoneFile
+
+logger = logging.getLogger(__name__)
+logging.getLogger("httpx").setLevel(logging.WARNING)
 
 
 async def reverse_ptr_update(c):
@@ -58,7 +62,7 @@ async def process_leases(name, c):
 async def zone_update():
     conf = await settings_dependency()
 
-    settings = Settingsv2()
+    settings = Settingsv2()  # pyright: ignore
 
     providers = [
         ZtClientInfo(settings.zt),
@@ -69,7 +73,17 @@ async def zone_update():
     while True:
         data = {}
         for p in providers:
-            data = {**data, **await p.get()}
+            try:
+                result = await p.get()
+                data = {**data, **result}
+
+                for k, v in result.items():
+                    logging.info(f"{type(p).__name__} load {k} with {len(v)} entries")
+            except Exception as ex:
+                # logging.error(f"failed to load {type(p).__name__}")  # , exc_info=ex)
+                logging.error(
+                    f"failed to load: {type(p).__name__}, {ex.__module__} : {ex}"
+                )
 
         for zone, clients in data.items():
             await process_leases(zone, clients)
