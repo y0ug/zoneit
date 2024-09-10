@@ -1,5 +1,6 @@
 from datetime import datetime
 from enum import Enum
+from typing import List
 
 from pydantic import BaseModel, Field
 
@@ -27,20 +28,19 @@ class RecordType(BaseModel):
 
 
 class ZoneFile:
-    records = [RecordType]
+    records: List[RecordType] = []
 
     def __init__(self, name: str, soa: SOA, ttl: int = 3600):
         self.name = name
         self.ttl = ttl
         self.soa = soa
-        self.records = []
 
     def add_record(self, record: RecordType):
         self.records.append(record)
 
     def generate(self):
         last_ttl = self.ttl
-        zone_str = f"""$ORIGIN .
+        zone_str = f"""$ORIGIN {self.name}.
 $TTL {self.ttl}
 {self.name}. IN SOA  {self.soa.mname}. {self.soa.rname}. (
     {self.soa.serial} ; serial
