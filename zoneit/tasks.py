@@ -42,7 +42,7 @@ def gen_zone_reverse(domain_name, clients):
     for record in clients:
         r = RecordType(
             rtype=RTypeEnum.PTR,
-            name=record.ptr.replace(domain_name, ""),
+            name=record.ptr.replace(f".{domain_name}", ""),
             value=f"{record.fqdn}.",
             ttl=300,
         )
