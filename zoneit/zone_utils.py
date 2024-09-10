@@ -28,12 +28,13 @@ class RecordType(BaseModel):
 
 
 class ZoneFile:
-    records: List[RecordType] = []
+    records: List[RecordType]
 
     def __init__(self, name: str, soa: SOA, ttl: int = 3600):
         self.name = name
         self.ttl = ttl
         self.soa = soa
+        self.records = []
 
     def add_record(self, record: RecordType):
         self.records.append(record)

@@ -1,5 +1,5 @@
 from ipaddress import ip_network
-from typing import Optional, Tuple, Type
+from typing import Dict, Optional, Tuple, Type
 
 from pydantic import (
     AnyHttpUrl,
@@ -67,7 +67,7 @@ class Ctx:
         "168.192.in-addr.arpa": ip_network("192.168.0.0/16"),
     }
     reverse_ptr: dict
-    zones: dict
+    zones: Dict[str, str]
     clients: dict
 
     def __init__(self) -> None:

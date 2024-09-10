@@ -43,7 +43,7 @@ def gen_zone_reverse(domain_name, clients):
     for record in clients:
         r = RecordType(
             rtype=RTypeEnum.PTR,
-            name=record.ptr,
+            name=record.ptr.replace(domain_name, ""),
             value=f"{record.fqdn}.",
             ttl=300,
         )
@@ -51,9 +51,12 @@ def gen_zone_reverse(domain_name, clients):
     return zone.generate()
 
 
-async def process_leases(name, c):
+async def process_leases(name: str, c):
     ctx = await ctx_dependency()
-    ctx.clients[name] = c
+    # ctx.clients[name] = c
+    # if name.endswith("in-addr.arpa"):
+    #    ctx.zones[name] = gen_zone_reverse(name, c)
+    # else:
     ctx.zones[name] = gen_zone(name, c)
     await reverse_ptr_update(c)
     return c
