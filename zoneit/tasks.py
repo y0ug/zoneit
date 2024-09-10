@@ -20,7 +20,6 @@ async def reverse_ptr_update(c):
         for x in c:
             if v.overlaps(ip_network(f"{x.ip_address}/24", strict=False)):
                 ctx.reverse_ptr[k].append(x)
-                return
 
 
 def gen_zone(domain_name, clients: List[ClientInfo]):
