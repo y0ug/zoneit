@@ -8,7 +8,11 @@ from fastapi.responses import PlainTextResponse
 from .config import Ctx, ctx_dependency
 from .tasks import zone_update
 
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s; %(name)s; %(levelname)s; %(message)s",
+    datefmt="%Y-%m-%dT%H:%M:%S%z",
+)
 logger = logging.getLogger(__name__)
 
 
