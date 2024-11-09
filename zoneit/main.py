@@ -2,8 +2,9 @@ import asyncio
 import logging
 from contextlib import asynccontextmanager
 from importlib import metadata
+from typing import Optional
 
-from fastapi import Depends, FastAPI, HTTPException, status
+from fastapi import Depends, FastAPI, HTTPException, status, Query
 from fastapi.responses import PlainTextResponse
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
@@ -17,7 +18,7 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-auth_scheme = HTTPBearer()
+auth_scheme = HTTPBearer(auto_error=False)
 settings = Settings()  # pyright: ignore
 
 # TODO package need to be installed for this to work correctly
@@ -29,14 +30,22 @@ logger.info(f"auth bearer: {settings.bearer_token}")
 
 
 def verify_bearer_token(
+    token: Optional[str] = Query(None),
     credentials: HTTPAuthorizationCredentials = Depends(auth_scheme),
 ):
+    # Check if GET param token match the bearer
+    if token == settings.bearer_token:
+        return True
+
+    # Check header Authorization: bearer
     if credentials.credentials != settings.bearer_token:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Unautorized",
-        )
-    return True
+        return True
+
+    # Failed return forbidden
+    raise HTTPException(
+        status_code=status.HTTP_403_FORBIDDEN,
+        detail="Unautorized",
+    )
 
 
 @asynccontextmanager

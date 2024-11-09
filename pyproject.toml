@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "zoneit"
-version = "0.1.18"
+version = "0.1.19"
 description = ""
 authors = ["Hugo Caron <hca443@gmail.com>"]
 readme = "README.md"
