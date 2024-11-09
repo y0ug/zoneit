@@ -20,6 +20,7 @@ logger = logging.getLogger(__name__)
 auth_scheme = HTTPBearer()
 settings = Settings()  # pyright: ignore
 
+# TODO package need to be installed for this to work correctly
 package_name = __package__ or "zoneit"
 __version__ = metadata.version(package_name)
 
