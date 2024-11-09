@@ -1,11 +1,13 @@
 import asyncio
 import logging
 from contextlib import asynccontextmanager
+from importlib import metadata
 
-from fastapi import Depends, FastAPI, HTTPException
+from fastapi import Depends, FastAPI, HTTPException, status
 from fastapi.responses import PlainTextResponse
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
-from .config import Ctx, ctx_dependency
+from .config import Ctx, Settings, ctx_dependency
 from .tasks import zone_update
 
 logging.basicConfig(
@@ -14,6 +16,26 @@ logging.basicConfig(
     datefmt="%Y-%m-%dT%H:%M:%S%z",
 )
 logger = logging.getLogger(__name__)
+
+auth_scheme = HTTPBearer()
+settings = Settings()  # pyright: ignore
+
+package_name = __package__ or "zoneit"
+__version__ = metadata.version(package_name)
+
+logger.info(f"starting {package_name} v{__version__}")
+logger.info(f"auth bearer: {settings.bearer_token}")
+
+
+def verify_bearer_token(
+    credentials: HTTPAuthorizationCredentials = Depends(auth_scheme),
+):
+    if credentials.credentials != settings.bearer_token:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Unautorized",
+        )
+    return True
 
 
 @asynccontextmanager
@@ -24,7 +46,10 @@ async def lifespan(app: FastAPI):
     # cleanup resource
 
 
-app = FastAPI(lifespan=lifespan)
+app = FastAPI(
+    lifespan=lifespan,
+    dependencies=[Depends(verify_bearer_token)],
+)
 
 
 @app.get("/zone/dump")
@@ -50,7 +75,9 @@ async def get_zone(
     ctx: Ctx = Depends(ctx_dependency),
 ):
     if name not in ctx.zones:
-        raise HTTPException(status_code=404, detail="Item not found")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Item not found"
+        )
     return ctx.zones[name]
 
 

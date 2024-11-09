@@ -1,13 +1,13 @@
 [tool.poetry]
 name = "zoneit"
-version = "0.1.16"
+version = "0.1.17"
 description = ""
 authors = ["Hugo Caron <hca443@gmail.com>"]
 readme = "README.md"
 packages = [{ include = "zoneit" }]
 
 [tool.poetry.dependencies]
-python = "^3.12"
+python = "^3.11"
 python-dotenv = "^1.0.1"
 pydantic = "^2.9.0"
 fastapi = { extras = ["standard"], version = "^0.113.0" }

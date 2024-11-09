@@ -1,11 +1,13 @@
 from ipaddress import ip_network
 from typing import Dict, Optional, Tuple, Type
+import uuid
 
 from pydantic import (
     AnyHttpUrl,
     BaseModel,
     Field,
     RedisDsn,
+    SecretStr,
 )
 from pydantic_settings import (
     BaseSettings,
@@ -43,7 +45,7 @@ class Settings(BaseSettings):
     ts: SettingsTs
     zt: SettingsZt
     mkt: SettingsMkt
-
+    bearer_token: str = Field(default=str(uuid.uuid4()))
     redis_url: RedisDsn = Field(
         "redis://localhost:6379/1",
     )
